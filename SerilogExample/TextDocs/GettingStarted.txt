@@ -1,0 +1,81 @@
+﻿
+*** Getting Started with Serilog ***
+(https://github.com/serilog/serilog/wiki/Getting-Started)
+(https://github.com/serilog/serilog)
+
+-*- Why Serilog? -*-
+
+Like many other .NET libraries, Serilog provides basic diagnostic logging to files, the console, and so-on. 
+It is easy to set up, has a clean API, and is portable between recent .NET platforms.
+
+Unlike other logging libraries for .NET, parameters passed along with log messages are not destructively rendered into a text format. 
+Instead, they're preserved as structured data, that can be written in document form to a NoSQL data store.
+
+	var input = new { Latitude = 25, Longitude = 134 };
+	var time = 34;
+
+	log.Information("Processed {@SensorInput} in {TimeMS:000} ms.", input, time);
+
+Serilog message templates use a simple DSL that extends the regular .NET format strings. 
+Properties are named within the message template, and matched positionally with the arguments provided to the log method.
+
+This example records two properties, SensorInput and TimeMS along with the log event.
+
+The properties captured in the example, in JSON format, would appear like:
+
+	{ "SensorInput": { "Latitude": 25, "Longitude": 134 },
+	  "TimeMS": 34 }
+
+The @ operator in front of SensorInput instructs Serilog to preserve the structure of the object passed in. 
+If this is omitted, Serilog recognises simple types like strings, numbers, dates and times, dictionaries and enumerables; all other objects are converted into strings using ToString(). 
+'Stringification' can be forced using the $ operator in place of @.
+
+The :000 segment following TimeMS is a standard .NET format string that affects how the property is rendered (not how it is captured). 
+The standard console sink included with Serilog will render the above message as:
+
+	09:14:22 [Information] Processed { Latitude: 25, Longitude: 134 } in 034 ms. 
+
+----------------------------------------------------------
+
+* Installing from NuGet *
+
+The core logging package is Serilog. 
+The supported platforms are .NET/.NET Core, .NET Framework 4.5+, Windows (8/WinRT/Universal+) and Windows Phone 8+.
+
+Commands in use in this example (Added with the Package Manager Console): 
+
+	Install-Package Serilog
+	Install-Package Serilog.Sinks.Console
+	Install-Package Serilog.Sinks.File
+
+Browse the Serilog tag on NuGet to see the available sinks, extensions and related third-party packages.
+(https://www.nuget.org/packages?q=Tags%3A%22serilog%22%22)
+
+----------------------------------------------------------
+
+* Setup *
+
+Types are in the Serilog namespace.
+
+	using Serilog;
+
+The root Logger is created using LoggerConfiguration.
+
+	using var log = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
+
+This is typically done once at application start-up, and the logger saved for later use by application classes. 
+Multiple loggers can be created and used independently if required.
+
+	log.Information("Hello, Serilog!");
+
+Serilog's global, statically accessible logger, is set via Log.Logger and can be invoked using the static methods on the Log class.
+
+	Log.Logger = log;
+	Log.Information("The global logger has been configured");
+
+Configuring and using the Log class is an optional convenience that makes it easier for libraries to adopt Serilog. 
+Serilog does not require any static/process-wide state within the logging pipeline itself, so using Logger/ILogger directly is fine.
+
+----------------------------------------------------------

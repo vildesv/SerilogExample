@@ -1,0 +1,42 @@
+﻿
+*** Debugging and Diagnostics ***
+https://github.com/serilog/serilog/wiki/Debugging-and-Diagnostics
+
+When Serilog is not behaving as you expect, this may be caused by an internal exception or configuration issues.
+Here are a couple of ways to sort things out.
+
+----------------------------------------------------------
+
+* SelfLog *
+
+First, Serilog will write simple diagnostic messages to user-specified output if provided. 
+Call SelfLog.Enable() at program startup:
+
+	Serilog.Debugging.SelfLog.Enable(msg => Debug.WriteLine(msg));
+
+The system console, a file or an in-memory StringWriter can all be used to collect Serilog's output by providing a TextWriter instead of a delegate:
+
+	Serilog.Debugging.SelfLog.Enable(Console.Error);
+
+Serilog never writes its own events to user-defined sinks.
+
+Warning: SelfLog does not perform any synchronization over the provided TextWriter. 
+For most implementations you should use the TextWriter.Synchronized() method to ensure the object being passed in can be written from multiple threads:
+
+----------------------------------------------------------
+
+* Debug Symbols *
+
+Most Serilog packages include debug symbols (_.PDB) on http://symbolsource.org - adding it as a symbol server in Visual Studio can help when determining the cause of an exception from a sink.
+
+----------------------------------------------------------
+
+* Serilog Analyzer *
+(https://github.com/Suchiman/SerilogAnalyzer)
+
+A Roslyn-based analysis for code using the Serilog logging library. 
+Checks for common mistakes and usage problems. 
+
+----------------------------------------------------------
+
+
